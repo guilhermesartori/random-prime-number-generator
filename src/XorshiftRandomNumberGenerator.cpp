@@ -14,13 +14,8 @@ XorshiftRandomNumberGenerator::XorshiftRandomNumberGenerator(unsigned long long
   state ^= state << 51;
 }
 
-XorshiftRandomNumberGenerator::~XorshiftRandomNumberGenerator() {
-}
-
-XorshiftRandomNumber XorshiftRandomNumberGenerator::generate() {
-  XorshiftRandomNumber randomNumber = XorshiftRandomNumber(
-    this->sizeInWords*64);
-
+RandomNumber XorshiftRandomNumberGenerator::generate() {
+  RandomNumber randomNumber{ this->sizeInWords*64 };
   for (unsigned long long i = 0; i < this->sizeInWords; i++) {
     state ^= state << 13;
     state ^= state >> 7;
@@ -28,31 +23,4 @@ XorshiftRandomNumber XorshiftRandomNumberGenerator::generate() {
     randomNumber.randomNumber[i] = state;
   }
   return randomNumber;
-}
-
-XorshiftRandomNumber::XorshiftRandomNumber(unsigned long long numberOfBits) {
-  this->numberOfBits = numberOfBits;
-  this->randomNumber = new unsigned long long[numberOfBits];
-}
-
-XorshiftRandomNumber::~XorshiftRandomNumber() {
-  delete[] randomNumber;
-}
-
-XorshiftRandomNumber::XorshiftRandomNumber(XorshiftRandomNumber&& other) {
-  this->randomNumber = other.randomNumber;
-  this->numberOfBits = other.numberOfBits;
-  other.randomNumber = nullptr;
-  other.numberOfBits = 0;
-}
-
-XorshiftRandomNumber& XorshiftRandomNumber::operator=(XorshiftRandomNumber&&
-  other) {
-  delete[] this->randomNumber;
-  this->randomNumber = other.randomNumber;
-  this->numberOfBits = other.numberOfBits;
-  other.randomNumber = nullptr;
-  other.numberOfBits = 0;
-
-  return *this;
 }
