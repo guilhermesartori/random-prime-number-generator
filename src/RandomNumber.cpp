@@ -1,4 +1,4 @@
-#include "RandomNumberGeneratorInterface.h"
+#include "RandomNumberGenerator.h"
 
 RandomNumber::RandomNumber(unsigned long long numberOfBits) {
   this->numberOfBits = numberOfBits;

@@ -1,17 +1,14 @@
 #include <iostream>
-#include "RandomNumberGeneratorInterface.h"
+#include "RandomNumberGenerator.h"
 #include "XorshiftRandomNumberGenerator.h"
 #include "MultiplyWithCarryRandomNumberGenerator.h"
+#include "MillerRabinPrimeRandomNumberGenerator.h"
 
 int main(int argc, char const *argv[]) {
-  XorshiftRandomNumberGenerator xorshift{ 4096ULL };
-  MultiplyWithCarryRandomNumberGenerator mwc{ 4096ULL };
-  RandomNumberGeneratorInterface& rng{ xorshift };
-  auto number = rng.generate();
-  for (unsigned long long i = 0; i < number.numberOfBits/64; i++) {
-    std::cout << std::hex << number.randomNumber[i] << '\n';
-  }
-  std::cout << std::endl;
-
+  XorshiftRandomNumberGenerator* xorshift{ new XorshiftRandomNumberGenerator{ } };
+  // MultiplyWithCarryRandomNumberGenerator mwc{ };
+  MillerRabinPrimeRandomNumberGenerator prime_rng{ xorshift };
+  auto number = prime_rng.generate();
+  std::cout << std::hex << number << std::endl;
   return 0;
 }

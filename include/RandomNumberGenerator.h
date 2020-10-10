@@ -1,5 +1,5 @@
-#ifndef RANDOM_NUMBER_GENERATOR_INTERFACE_H
-#define RANDOM_NUMBER_GENERATOR_INTERFACE_H
+#ifndef RANDOM_NUMBER_GENERATOR_H
+#define RANDOM_NUMBER_GENERATOR_H
 
 class RandomNumber {
 public:
@@ -14,10 +14,10 @@ public:
   RandomNumber& operator=(RandomNumber&&);
 };
 
-class RandomNumberGeneratorInterface {
+class RandomNumberGenerator {
 public:
-  virtual RandomNumber generate() = 0;
+  virtual unsigned long long generate() = 0;
 };
 
 
-#endif /* end of include guard: RANDOM_NUMBER_GENERATOR_INTERFACE_H */
+#endif /* end of include guard: RANDOM_NUMBER_GENERATOR_H */
