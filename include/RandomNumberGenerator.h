@@ -1,22 +1,23 @@
 #ifndef RANDOM_NUMBER_GENERATOR_H
 #define RANDOM_NUMBER_GENERATOR_H
 
-class RandomNumber {
-public:
-  unsigned long long numberOfBits;
-  unsigned long long * randomNumber;
+#include <boost/multiprecision/cpp_int.hpp>
 
-  RandomNumber(unsigned long long);
-  ~RandomNumber();
-  RandomNumber(const RandomNumber&) = delete;
-  RandomNumber(RandomNumber&&);
-  RandomNumber& operator=(const RandomNumber&) = delete;
-  RandomNumber& operator=(RandomNumber&&);
-};
+template <int Bits>
+using big_integer = boost::multiprecision::number<
+  boost::multiprecision::cpp_int_backend<
+    Bits,
+    Bits,
+    boost::multiprecision::unsigned_magnitude,
+    boost::multiprecision::checked,
+    void
+  >
+>;
 
+template <int Bits>
 class RandomNumberGenerator {
 public:
-  virtual unsigned long long generate() = 0;
+  virtual big_integer<Bits> generate() = 0;
 };
 
 
