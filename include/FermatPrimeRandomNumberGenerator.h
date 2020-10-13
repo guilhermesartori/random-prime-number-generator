@@ -35,14 +35,14 @@ protected:
       // Encontrar um a tal que 1 < a < n - 1
       big_integer<Bits+Bits> a{ 0 };
       while (a < 2 || a == n - 1)
-      a = this->generator->generate() % n;
+        a = this->generator->generate() % n;
 
       // Calcular a^(n-1) mod n
       auto x = this->powerMod(a, n-1, n);
 
       // Se a^(n-1) mod n != 1, n é composto
       if (x != 1)
-      return false;
+        return false;
     }
 
     return true;
