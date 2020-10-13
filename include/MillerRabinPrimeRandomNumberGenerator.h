@@ -11,106 +11,85 @@
 #include "MultiplyWithCarryRandomNumberGenerator.h"
 #include "PrimeRandomNumberGenerator.h"
 
+/* Classe para geração de números aleatórios utilizando o algoritmo de
+ * primalidade de Miller-Rabin.
+ */
 template <int Bits>
-class MillerRabinPrimeRandomNumberGenerator {
-private:
-  std::unique_ptr<RandomNumberGenerator<Bits>> generator;
+class MillerRabinPrimeRandomNumberGenerator: public PrimeRandomNumberGenerator<
+Bits> {
+protected:
 
-  big_integer<Bits+Bits> power(big_integer<Bits+Bits> x, big_integer<Bits+Bits> y, big_integer<Bits+Bits> p) {
-  	big_integer<Bits+Bits> res = 1;	 // Initialize result
-  	x = x % p; // Update x if it is more than or
-  				// equal to p
-  	while (y > 0)
-  	{
-  		// If y is odd, multiply x with result
-  		if (y & 1)
-  			res = (res*x) % p;
+  /* Teste  de miller-rabin
+   * q satisfaz n-1 = q*2^k
+   * n é o número sendo testado
+   * returna true se n é provavelmente primo e false se n é composto
+   */
+  bool millerRabinTest(big_integer<Bits+Bits> q, big_integer<Bits> n) {
 
-  		// y must be even now
-  		y = y>>1; // y = y/2
-  		x = (x*x) % p;
-  	}
-  	return res;
-  }
-
-  bool miillerTest(big_integer<Bits+Bits> d, big_integer<Bits> n) {
-      // Pick a random number in [2..n-2]
-      // Corner cases make sure that n > 4
+      // Gera um número aleatório 1 < a < n-1
       big_integer<Bits+Bits> a{ this->generator->generate() % n };
-      while (a == n-1 || a == 1ULL || a == 0ULL)
+      while (a == n-1 || a <= 1)
         a = this->generator->generate() % n;
 
 
-      // Compute a^d % n
-      big_integer<Bits+Bits> x = power(a, d, n);
+      // Computa a^q mod n
+      big_integer<Bits+Bits> x = this->powerMod(a, q, n);
 
-      if (x == 1ULL  || x == n-1ULL)
+      // Se a^q mod n = 1 ou n-1, n é provavelmente primo
+      if (x == 1  || x == n-1)
         return true;
 
-      // Keep squaring x while one of the following doesn't
-      // happen
-      // (i)   d does not reach n-1
-      // (ii)  (x^2) % n is not 1
-      // (iii) (x^2) % n is not n-1
-      while (d != n-1)
-      {
+      // Executa k vezes, em que k satisfaz n-1 = q*2^k
+      for (; q != n-1; q *= 2) {
+          // computa (a^q)² mod n
           x = (x * x) % n;
-          d *= 2ULL;
 
-
-          if (x == 1ULL)
+          // Se (a^q)² mod n = 1, n é composto
+          if (x == 1)
             return false;
-          if (x == n-1ULL)
+
+          // Se (a^q)² = n-1, n é provavelmente primo
+          if (x == n-1)
             return true;
       }
 
-      // Return composite
+      // n é composto
       return false;
   }
 
-public:
-  MillerRabinPrimeRandomNumberGenerator(Generator generator) {
-    switch (generator) {
-      case Generator::XORSHIFT:
-        this->generator = std::unique_ptr<RandomNumberGenerator<Bits>>{new XorshiftRandomNumberGenerator<Bits>{}};
-        break;
-      case Generator::MWC:
-        this->generator = std::unique_ptr<RandomNumberGenerator<Bits>>{new MultiplyWithCarryRandomNumberGenerator<Bits>{}};
-        break;
-    }
-  }
+  /* Verifica se n é primo
+   *
+   */
   bool isPrime(big_integer<Bits> n) {
-    int k = 10;
-    if (n == 1)
-      return false;
-    else if (n == 2)
-      return true;
-    else if (n == 3)
-      return true;
-    else if (n % 2 == 0)
-      return false;
-    else {
-      big_integer<Bits+Bits> d = n - 1;
-      while (d % 2 == 0)
-        d /= 2;
 
-      for (int i = 0; i < k; i++)
-        if (!miillerTest(d, n))
+    // Corner cases
+    if (n == 1 || n % 2 == 0)
+      return false;
+    else if (n == 2 || n == 3)
+      return true;
+
+    // Teste de primalidade
+    else {
+
+      // Encontra q tal que q*2^k = n-1
+      big_integer<Bits+Bits> q = n - 1;
+      while (q % 2 == 0)
+        q /= 2;
+
+      /* Algoritmo probabilistico, entao executa o numero de iterações que foi
+       * definido
+       */
+      for (int i = 0; i < this->iterations; i++)
+        // Executa o teste de miller-rabin. Se falhar, o número é composto.
+        if (!millerRabinTest(q, n))
           return false;
 
       return true;
     }
   }
 
-  big_integer<Bits> generate() {
-    big_integer<Bits> number = this->generator->generate();
-    bool numberIsPrime = this->isPrime(number);
-    while(!numberIsPrime) {
-      number = this->generator->generate();
-      numberIsPrime = this->isPrime(number);
-    }
-    return number;
-  }
+public:
+  using PrimeRandomNumberGenerator<Bits>::PrimeRandomNumberGenerator;
 };
 
 #endif /* end of include guard: MILLER_RABIN_PRIME_RNG_H */
